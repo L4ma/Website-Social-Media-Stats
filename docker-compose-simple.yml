@@ -1,8 +1,7 @@
 version: '3.8'
-
 services:
   social-media-stats:
-    build: .
+    image: ghcr.io/l4ma/website-social-media-stats:latest
     container_name: social-media-stats
     ports:
       - "3000:80"

@@ -4,80 +4,49 @@ A modern, responsive web application for tracking and visualizing social media s
 
 ## 🚀 Quick Start
 
-### Option 1: Docker Compose (Recommended)
-
+### Using GitHub Container Registry
 ```bash
-# Clone the repository
-git clone https://github.com/L4ma/Website-Social-Media-Stats.git
-cd Website-Social-Media-Stats
+# Pull the latest image
+docker pull ghcr.io/l4ma/website-social-media-stats:latest
 
-# Start with Docker Compose
-docker compose -f docker-compose-simple.yml up -d
+# Run the container
+docker run -d -p 3000:80 --name social-media-stats ghcr.io/l4ma/website-social-media-stats:latest
 
 # Access the application
 open http://localhost:3000
 ```
 
-### Option 2: Development Mode
-
+### Using Docker Compose
 ```bash
-# Clone the repository
-git clone https://github.com/L4ma/Website-Social-Media-Stats.git
-cd Website-Social-Media-Stats
+# Create docker-compose.yml
+cat > docker-compose.yml << EOF
+version: '3.8'
+services:
+  social-media-stats:
+    image: ghcr.io/l4ma/website-social-media-stats:latest
+    container_name: social-media-stats
+    ports:
+      - "3000:80"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+EOF
 
-# Install dependencies
-npm install
-
-# Start development server
-npm start
+# Start the application
+docker compose up -d
 ```
 
-### Option 3: Interactive Setup
-
+### Interactive Setup
 ```bash
-# Run the interactive installation script
+# Run the interactive setup script
+chmod +x install-docker-compose.sh
 ./install-docker-compose.sh
 ```
 
-## 🐳 Docker Setup
-
-### Prerequisites
-
-1. **Install Docker Desktop**:
-   - Visit: https://www.docker.com/products/docker-desktop
-   - Download and install for your platform
-   - Docker Compose comes included
-
-### Quick Commands
-
-```bash
-# Start application
-docker compose -f docker-compose-simple.yml up -d
-
-# View logs
-docker compose -f docker-compose-simple.yml logs -f
-
-# Stop application
-docker compose -f docker-compose-simple.yml down
-
-# Restart application
-docker compose -f docker-compose-simple.yml restart
-```
-
-### Production Deployment
-
-```bash
-# Build production image
-docker compose build
-
-# Deploy to server
-docker compose up -d
-
-# With custom port
-docker compose -f docker-compose-simple.yml up -d
-```
-
-## 📱 Features
+## 📊 Features
 
 ### ✅ Connected Platforms
 - **YouTube**: Channel statistics, video analytics, subscriber growth
@@ -94,125 +63,180 @@ docker compose -f docker-compose-simple.yml up -d
 - **Real-time Updates**: Live data refresh and status monitoring
 - **Mobile Responsive**: Works perfectly on all devices
 
-### ✅ API Integration
-- **YouTube Data API v3**: Real channel statistics
-- **Instagram Basic Display API**: OAuth authentication
-- **Local Storage**: Persistent configuration and data caching
-
 ## 🔧 Configuration
 
 ### YouTube Setup
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a project and enable YouTube Data API v3
-3. Generate an API key
-4. Enter your channel ID and API key in Settings → YouTube
+1. Get your YouTube Data API v3 key from [Google Cloud Console](https://console.cloud.google.com/)
+2. Find your YouTube Channel ID
+3. Go to Settings → YouTube Configuration
+4. Enter your API key and Channel ID
+5. Save configuration
 
 ### Instagram Setup
-1. Go to [Facebook Developers](https://developers.facebook.com/)
-2. Create an Instagram Basic Display app
-3. Configure OAuth redirect URIs
-4. Enter your app credentials in Settings → Instagram
+1. Go to Settings → Instagram Configuration
+2. Click "Connect Instagram" for demo mode
+3. Or configure OAuth for real data access
 
-## 📊 Data Collection
+## 📈 Data Collection
 
 ### Daily Data Collection
-- Automatic daily statistics collection
-- Historical data building over time
-- Local storage for offline access
-- API quota management and caching
+- **Automatic**: Collects daily statistics when configured
+- **Historical**: Builds historical data over time
+- **Local Storage**: Data persists in browser localStorage
+- **API Quota Management**: Prevents exceeding API limits
 
 ### API Quota Management
-- Conservative API call limits (4 calls/day for YouTube)
-- Rate limiting (6 hours between calls)
-- Intelligent caching and fallback to demo data
-- Real-time quota status monitoring
+- **YouTube**: 4 calls per day maximum (conservative)
+- **Rate Limiting**: 6 hours between calls
+- **Smart Caching**: Uses cached data when API limits reached
+- **Demo Data**: Falls back to realistic demo data
 
 ## 🛠️ Development
 
-### Project Structure
-```
-src/
-├── components/          # React components
-├── services/           # API services
-├── utils/              # Utility functions
-└── App.tsx            # Main application
-```
+### Prerequisites
+- Node.js 18+ 
+- npm or yarn
+- Docker (optional)
 
-### Key Technologies
-- **React 18** with TypeScript
-- **Tailwind CSS** for styling
-- **Recharts** for data visualization
-- **Framer Motion** for animations
-- **Lucide React** for icons
-
-### Available Scripts
+### Local Development
 ```bash
-npm start          # Start development server
-npm run build      # Build for production
-npm test           # Run tests
-npm run eject      # Eject from Create React App
-```
+# Clone the repository
+git clone https://github.com/L4ma/Website-Social-Media-Stats.git
+cd Website-Social-Media-Stats
 
-## 🚀 Deployment
+# Install dependencies
+npm install
 
-### Docker Deployment
-```bash
-# Build and run with Docker
-docker build -t social-media-stats .
-docker run -d -p 3000:80 social-media-stats
+# Start development server
+npm start
 
-# Or use Docker Compose
-docker compose up -d
-```
-
-### Production Build
-```bash
-# Build optimized production bundle
+# Build for production
 npm run build
 
-# Serve with nginx or any static server
-npx serve -s build
+# Run tests
+npm test
+
+# Run linter
+npm run lint
+```
+
+### Docker Development
+```bash
+# Build development image
+docker build -t social-media-stats:dev .
+
+# Run with volume mounting
+docker run -v $(pwd):/app -p 3000:3000 \
+  -e NODE_ENV=development \
+  social-media-stats:dev npm start
+```
+
+## 🐳 Docker Setup
+
+### Prerequisites
+- Docker Desktop installed and running
+- Git repository cloned
+
+### Quick Start
+```bash
+# Simple Docker run
+docker run -d -p 3000:80 ghcr.io/l4ma/website-social-media-stats:latest
+
+# With Docker Compose
+docker compose up -d
+
+# Interactive setup
+./install-docker-compose.sh
+```
+
+### Production Deployment
+```bash
+# With resource limits
+docker run -d -p 3000:80 \
+  --memory=512m --cpus=1.0 \
+  --name social-media-stats \
+  ghcr.io/l4ma/website-social-media-stats:latest
+
+# With custom configuration
+docker run -d -p 8080:80 \
+  -e NODE_ENV=production \
+  ghcr.io/l4ma/website-social-media-stats:latest
+```
+
+## 📦 Available Images
+
+### GitHub Container Registry
+```bash
+# Latest version
+docker pull ghcr.io/l4ma/website-social-media-stats:latest
+
+# Specific version
+docker pull ghcr.io/l4ma/website-social-media-stats:v1.0.0
+
+# Main branch
+docker pull ghcr.io/l4ma/website-social-media-stats:main
+```
+
+### Image Tags
+- `latest` - Latest stable release
+- `main` - Latest from main branch
+- `v1.0.0` - Specific version tags
+- `sha-abc123` - Commit-specific builds
+
+## 🔒 Security
+
+### Security Features
+- **Security Headers**: XSS protection and content security policy
+- **Non-root Container**: Runs with minimal privileges
+- **Health Checks**: Automatic monitoring
+- **Resource Limits**: Configurable memory and CPU limits
+
+### Production Security
+```bash
+# Run with security best practices
+docker run -d -p 3000:80 \
+  --security-opt no-new-privileges \
+  --read-only \
+  --tmpfs /tmp \
+  ghcr.io/l4ma/website-social-media-stats:latest
 ```
 
 ## 📈 Monitoring
 
 ### Health Check
 ```bash
-# Check application health
+# Check if the application is running
 curl http://localhost:3000/health
 
 # Expected response: "healthy"
 ```
 
-### Logs
+### Container Monitoring
 ```bash
-# View application logs
-docker compose logs -f
+# View container logs
+docker logs social-media-stats
 
-# View specific service logs
-docker compose logs social-media-stats
+# Monitor resource usage
+docker stats social-media-stats
+
+# Check container status
+docker ps
 ```
-
-## 🔒 Security
-
-### Security Features
-- **OAuth 2.0**: Secure Instagram authentication
-- **API Key Management**: Secure storage of credentials
-- **CORS Protection**: Cross-origin request handling
-- **Security Headers**: XSS protection and content security policy
-
-### Data Privacy
-- **Local Storage**: All data stored locally in browser
-- **No Server Storage**: No personal data sent to external servers
-- **Revocable Access**: Easy disconnect from social platforms
 
 ## 🤝 Contributing
 
+### Development Setup
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create a feature branch
+3. Make your changes
+4. Run tests and linting
+5. Submit a pull request
+
+### Guidelines
+- Follow TypeScript best practices
+- Use ESLint for code quality
+- Write meaningful commit messages
+- Test your changes thoroughly
 
 ## 📝 License
 
@@ -220,22 +244,27 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- **YouTube Data API v3** for channel statistics
-- **Instagram Basic Display API** for profile data
-- **Recharts** for beautiful data visualization
-- **Tailwind CSS** for modern styling
-- **Framer Motion** for smooth animations
+- **React** for the frontend framework
+- **Recharts** for data visualization
+- **Tailwind CSS** for styling
+- **Framer Motion** for animations
+- **YouTube Data API** for YouTube integration
+- **Instagram Basic Display API** for Instagram integration
 
 ## 📞 Support
 
-If you encounter any issues:
+### Getting Help
+- **GitHub Issues**: [Report bugs or request features](https://github.com/L4ma/Website-Social-Media-Stats/issues)
+- **Documentation**: Check the [Wiki](https://github.com/L4ma/Website-Social-Media-Stats/wiki)
+- **Discussions**: Use [GitHub Discussions](https://github.com/L4ma/Website-Social-Media-Stats/discussions)
 
-1. Check the [Issues](https://github.com/L4ma/Website-Social-Media-Stats/issues) page
-2. Review the [Docker Compose Guide](DOCKER_COMPOSE_GUIDE.md)
-3. Check the [Docker README](DOCKER_README.md)
+### Common Issues
+- **API Quota Exceeded**: Wait 24 hours or check quota limits
+- **Data Not Loading**: Verify API keys and channel IDs
+- **Docker Issues**: Check Docker installation and permissions
 
 ---
 
 **Built with ❤️ using React, TypeScript, and Docker**
 
-**Repository**: https://github.com/L4ma/Website-Social-Media-Stats 
+**Maintained by**: [L4ma](https://github.com/L4ma) 
