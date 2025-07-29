@@ -8,6 +8,15 @@ yarn-error.log*
 build
 dist
 
+# Test files
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+**/__tests__/
+**/test/
+**/tests/
+
 # Environment files
 .env
 .env.local
