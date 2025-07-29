@@ -29,7 +29,7 @@ const InstagramStats: React.FC = () => {
       const engagementData = generateTimeFilteredData(
         analytics.monthlyEngagement, 
         selectedFilter, 
-        analytics.stats.engagementRate,
+        analytics.stats.totalLikes + analytics.stats.totalComments,
         'engagement'
       );
       setFilteredFollowersData(followersData);

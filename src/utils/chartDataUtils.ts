@@ -187,7 +187,7 @@ export const generateMultiPlatformData = (
   filter: TimeFilter,
   youtubeValue: number,
   threadsValue: number = 48500,
-  instagramValue: number = 71200
+  instagramValue: number = 12450
 ): MultiPlatformDataPoint[] => {
   const now = new Date();
   let dataPoints: MultiPlatformDataPoint[] = [];

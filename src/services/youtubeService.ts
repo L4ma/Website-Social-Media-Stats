@@ -285,35 +285,31 @@ class YouTubeService {
     let canMakeCall = true;
     let showCallCount = true;
     
-    let reason = 'Ready';
-    if (actualQuotaExceeded) {
-      reason = 'YouTube API quota exceeded - wait 24 hours';
-      canMakeCall = false;
-      showCallCount = false;
-    } else if (isQuotaExceeded) {
-      reason = 'Daily quota exceeded - wait 24 hours';
-      canMakeCall = false;
-      showCallCount = false;
-    } else if (isRateLimited) {
-      reason = `Rate limited - wait ${minutesUntilNext} minutes`;
-      canMakeCall = false;
-      showCallCount = false;
-    }
-    
-    return {
-      dailyCalls: this.apiCallCount,
-      maxCalls: this.MAX_DAILY_CALLS,
-      remainingCalls: Math.max(0, this.MAX_DAILY_CALLS - this.apiCallCount),
-      lastCall: this.lastApiCall,
-      canMakeCall,
-      usingCachedData: (!canMakeCall) && hasCachedData,
-      usingDemoData: (!canMakeCall) && !hasCachedData,
-      reason: isQuotaExceeded ? 'Daily quota exceeded - wait 24 hours (4 calls max)' : 
-              isRateLimited ? `Rate limited - wait ${minutesUntilNext} minutes (6h cooldown)` : 'Ready',
-      showCallCount,
-      timeUntilNext: timeUntilNextCall,
-      actualQuotaExceeded
-    };
+          if (actualQuotaExceeded) {
+        canMakeCall = false;
+        showCallCount = false;
+      } else if (isQuotaExceeded) {
+        canMakeCall = false;
+        showCallCount = false;
+      } else if (isRateLimited) {
+        canMakeCall = false;
+        showCallCount = false;
+      }
+
+      return {
+        dailyCalls: this.apiCallCount,
+        maxCalls: this.MAX_DAILY_CALLS,
+        remainingCalls: Math.max(0, this.MAX_DAILY_CALLS - this.apiCallCount),
+        lastCall: this.lastApiCall,
+        canMakeCall,
+        usingCachedData: (!canMakeCall) && hasCachedData,
+        usingDemoData: (!canMakeCall) && !hasCachedData,
+        reason: isQuotaExceeded ? 'Daily quota exceeded - wait 24 hours (4 calls max)' : 
+                isRateLimited ? `Rate limited - wait ${minutesUntilNext} minutes (6h cooldown)` : 'Ready',
+        showCallCount,
+        timeUntilNext: timeUntilNextCall,
+        actualQuotaExceeded
+      };
   }
 
   private async fetchFromAPI(url: string): Promise<any> {

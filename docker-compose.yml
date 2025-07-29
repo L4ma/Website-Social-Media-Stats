@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  social-media-stats:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: social-media-stats
+    ports:
+      - "3000:80"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - social-media-network
+
+  # Optional: Add a reverse proxy for SSL termination
+  nginx-proxy:
+    image: nginx:alpine
+    container_name: social-media-stats-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx-proxy.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - social-media-stats
+    restart: unless-stopped
+    networks:
+      - social-media-network
+    profiles:
+      - proxy
+
+networks:
+  social-media-network:
+    driver: bridge
+
+volumes:
+  # Optional: Add persistent storage if needed
+  app-data:
+    driver: local 

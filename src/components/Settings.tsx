@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Settings as SettingsIcon, Youtube, Instagram, Database, Shield, Bell } from 'lucide-react';
 import YouTubeConfig from './YouTubeConfig';
-import InstagramConfig from './InstagramConfig';
+import InstagramConfigComponent from './InstagramConfigComponent';
 import DataCollectionStatus from './DataCollectionStatus';
+import type { InstagramConfig as InstagramConfigType } from '../services/instagramService';
 
 type SettingsTab = 'youtube' | 'instagram' | 'status' | 'notifications' | 'privacy';
 
@@ -59,7 +60,7 @@ const Settings: React.FC = () => {
                 Configure your Instagram OAuth credentials to access real profile data and recent posts.
               </p>
             </div>
-            <InstagramConfig onConfigUpdate={(config) => {
+            <InstagramConfigComponent onConfigUpdate={(config: InstagramConfigType) => {
               // Handle config update if needed
               console.log('Instagram config updated:', config);
             }} />
