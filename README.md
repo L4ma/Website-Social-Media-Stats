@@ -1,116 +1,241 @@
-# Social Media Statistics Dashboard
+# 📊 Social Media Statistics Dashboard
 
-A modern, interactive dashboard for tracking your social media performance across Threads, Instagram, and YouTube platforms.
+A modern, responsive web application for tracking and visualizing social media statistics across multiple platforms including YouTube and Instagram.
 
-## Features
+## 🚀 Quick Start
 
-- 📊 **Real-time Analytics**: Track followers, engagement, and growth metrics
-- 📈 **Interactive Charts**: Beautiful visualizations using Recharts
-- 🎨 **Modern UI**: Clean, responsive design with Tailwind CSS
-- ⚡ **Smooth Animations**: Framer Motion for delightful user experience
-- 📱 **Mobile Responsive**: Works perfectly on all devices
-- 🎯 **Platform-specific Views**: Detailed analytics for each platform
+### Option 1: Docker Compose (Recommended)
 
-## Tech Stack
+```bash
+# Clone the repository
+git clone https://github.com/L4ma/Website-Social-Media-Stats.git
+cd Website-Social-Media-Stats
 
+# Start with Docker Compose
+docker compose -f docker-compose-simple.yml up -d
+
+# Access the application
+open http://localhost:3000
+```
+
+### Option 2: Development Mode
+
+```bash
+# Clone the repository
+git clone https://github.com/L4ma/Website-Social-Media-Stats.git
+cd Website-Social-Media-Stats
+
+# Install dependencies
+npm install
+
+# Start development server
+npm start
+```
+
+### Option 3: Interactive Setup
+
+```bash
+# Run the interactive installation script
+./install-docker-compose.sh
+```
+
+## 🐳 Docker Setup
+
+### Prerequisites
+
+1. **Install Docker Desktop**:
+   - Visit: https://www.docker.com/products/docker-desktop
+   - Download and install for your platform
+   - Docker Compose comes included
+
+### Quick Commands
+
+```bash
+# Start application
+docker compose -f docker-compose-simple.yml up -d
+
+# View logs
+docker compose -f docker-compose-simple.yml logs -f
+
+# Stop application
+docker compose -f docker-compose-simple.yml down
+
+# Restart application
+docker compose -f docker-compose-simple.yml restart
+```
+
+### Production Deployment
+
+```bash
+# Build production image
+docker compose build
+
+# Deploy to server
+docker compose up -d
+
+# With custom port
+docker compose -f docker-compose-simple.yml up -d
+```
+
+## 📱 Features
+
+### ✅ Connected Platforms
+- **YouTube**: Channel statistics, video analytics, subscriber growth
+- **Instagram**: Profile data, post engagement, follower analytics
+- **Overview**: Combined statistics across all platforms
+
+### ✅ Data Visualization
+- **Interactive Charts**: Real-time data visualization with Recharts
+- **Time Filters**: 7 days, 30 days, 3 months, 6 months, 1 year
+- **Growth Trends**: Visual representation of platform growth
+
+### ✅ User Experience
+- **Modern UI**: Clean, responsive design with Tailwind CSS
+- **Real-time Updates**: Live data refresh and status monitoring
+- **Mobile Responsive**: Works perfectly on all devices
+
+### ✅ API Integration
+- **YouTube Data API v3**: Real channel statistics
+- **Instagram Basic Display API**: OAuth authentication
+- **Local Storage**: Persistent configuration and data caching
+
+## 🔧 Configuration
+
+### YouTube Setup
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a project and enable YouTube Data API v3
+3. Generate an API key
+4. Enter your channel ID and API key in Settings → YouTube
+
+### Instagram Setup
+1. Go to [Facebook Developers](https://developers.facebook.com/)
+2. Create an Instagram Basic Display app
+3. Configure OAuth redirect URIs
+4. Enter your app credentials in Settings → Instagram
+
+## 📊 Data Collection
+
+### Daily Data Collection
+- Automatic daily statistics collection
+- Historical data building over time
+- Local storage for offline access
+- API quota management and caching
+
+### API Quota Management
+- Conservative API call limits (4 calls/day for YouTube)
+- Rate limiting (6 hours between calls)
+- Intelligent caching and fallback to demo data
+- Real-time quota status monitoring
+
+## 🛠️ Development
+
+### Project Structure
+```
+src/
+├── components/          # React components
+├── services/           # API services
+├── utils/              # Utility functions
+└── App.tsx            # Main application
+```
+
+### Key Technologies
 - **React 18** with TypeScript
 - **Tailwind CSS** for styling
 - **Recharts** for data visualization
 - **Framer Motion** for animations
 - **Lucide React** for icons
 
-## Getting Started
-
-### Prerequisites
-
-- Node.js (version 16 or higher)
-- npm or yarn
-
-### Installation
-
-1. Clone the repository:
+### Available Scripts
 ```bash
-git clone <repository-url>
-cd Stats_SocialMedia
+npm start          # Start development server
+npm run build      # Build for production
+npm test           # Run tests
+npm run eject      # Eject from Create React App
 ```
 
-2. Install dependencies:
+## 🚀 Deployment
+
+### Docker Deployment
 ```bash
-npm install
+# Build and run with Docker
+docker build -t social-media-stats .
+docker run -d -p 3000:80 social-media-stats
+
+# Or use Docker Compose
+docker compose up -d
 ```
 
-3. Start the development server:
+### Production Build
 ```bash
-npm start
+# Build optimized production bundle
+npm run build
+
+# Serve with nginx or any static server
+npx serve -s build
 ```
 
-4. Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## 📈 Monitoring
 
-## Project Structure
+### Health Check
+```bash
+# Check application health
+curl http://localhost:3000/health
 
-```
-src/
-├── components/
-│   ├── Header.tsx              # Main header component
-│   ├── StatsOverview.tsx       # Overview statistics cards
-│   ├── PlatformStats.tsx       # Individual platform analytics
-│   ├── EngagementChart.tsx     # Engagement trends chart
-│   ├── GrowthChart.tsx         # Follower growth chart
-│   └── AudienceChart.tsx       # Audience distribution pie chart
-├── App.tsx                     # Main application component
-├── index.tsx                   # Application entry point
-└── index.css                   # Global styles and Tailwind imports
+# Expected response: "healthy"
 ```
 
-## Available Scripts
+### Logs
+```bash
+# View application logs
+docker compose logs -f
 
-- `npm start` - Runs the app in development mode
-- `npm build` - Builds the app for production
-- `npm test` - Launches the test runner
-- `npm eject` - Ejects from Create React App (not recommended)
+# View specific service logs
+docker compose logs social-media-stats
+```
 
-## Features Overview
+## 🔒 Security
 
-### Dashboard Overview
-- Total followers across all platforms
-- Engagement metrics
-- Growth trends
-- Cross-platform comparison
+### Security Features
+- **OAuth 2.0**: Secure Instagram authentication
+- **API Key Management**: Secure storage of credentials
+- **CORS Protection**: Cross-origin request handling
+- **Security Headers**: XSS protection and content security policy
 
-### Platform-Specific Analytics
-- **Threads**: Followers, posts, engagement, replies
-- **Instagram**: Followers, posts, likes, comments
-- **YouTube**: Subscribers, videos, views, watch time
+### Data Privacy
+- **Local Storage**: All data stored locally in browser
+- **No Server Storage**: No personal data sent to external servers
+- **Revocable Access**: Easy disconnect from social platforms
 
-### Interactive Charts
-- Line charts for growth trends
-- Area charts for follower distribution
-- Bar charts for engagement comparison
-- Pie charts for audience breakdown
-
-## Customization
-
-### Adding New Platforms
-1. Update the platform data in `PlatformStats.tsx`
-2. Add new chart configurations
-3. Update the navigation tabs in `App.tsx`
-
-### Modifying Data
-- Edit the mock data in each component
-- Replace with real API calls for live data
-- Customize chart colors and styling
-
-## Contributing
+## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-## License
+## 📝 License
 
-This project is licensed under the MIT License.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Support
+## 🙏 Acknowledgments
 
-For support or questions, please open an issue in the repository. 
+- **YouTube Data API v3** for channel statistics
+- **Instagram Basic Display API** for profile data
+- **Recharts** for beautiful data visualization
+- **Tailwind CSS** for modern styling
+- **Framer Motion** for smooth animations
+
+## 📞 Support
+
+If you encounter any issues:
+
+1. Check the [Issues](https://github.com/L4ma/Website-Social-Media-Stats/issues) page
+2. Review the [Docker Compose Guide](DOCKER_COMPOSE_GUIDE.md)
+3. Check the [Docker README](DOCKER_README.md)
+
+---
+
+**Built with ❤️ using React, TypeScript, and Docker**
+
+**Repository**: https://github.com/L4ma/Website-Social-Media-Stats 
