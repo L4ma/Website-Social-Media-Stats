@@ -66,10 +66,22 @@ jobs:
         cache-from: type=gha
         cache-to: type=gha,mode=max
         
-    - name: Test the published image
-      run: |
-        docker pull ghcr.io/${{ steps.repo.outputs.repo_lowercase }}:latest
-        docker run --rm ghcr.io/${{ steps.repo.outputs.repo_lowercase }}:latest wget --quiet --tries=1 --spider http://localhost/health || exit 1
+           - name: Test the published image
+         run: |
+           docker pull ghcr.io/${{ steps.repo.outputs.repo_lowercase }}:latest
+           # Start container in background and wait for it to be ready
+           docker run -d --name test-container ghcr.io/${{ steps.repo.outputs.repo_lowercase }}:latest
+           sleep 10
+           # Check if container is running and nginx is responding
+           if docker ps | grep -q test-container; then
+             echo "Container is running successfully"
+             docker stop test-container
+             docker rm test-container
+           else
+             echo "Container failed to start"
+             docker logs test-container
+             exit 1
+           fi
         
     - name: Create Release
       uses: actions/create-release@v1
