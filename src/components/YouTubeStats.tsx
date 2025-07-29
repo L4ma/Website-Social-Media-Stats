@@ -3,14 +3,43 @@ import { motion } from 'framer-motion';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { Users, Eye, Heart, MessageCircle, Clock, TrendingUp, Play, Calendar, RefreshCw } from 'lucide-react';
 import { youtubeService, YouTubeAnalytics } from '../services/youtubeService';
+import ChartFilters, { TimeFilter } from './ChartFilters';
+import { generateTimeFilteredData } from '../utils/chartDataUtils';
+import { dataCollectionService } from '../services/dataCollectionService';
 
 const YouTubeStats: React.FC = () => {
   const [analytics, setAnalytics] = useState<YouTubeAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedFilter, setSelectedFilter] = useState<TimeFilter>('6m');
+  const [filteredSubscriberData, setFilteredSubscriberData] = useState<any[]>([]);
+  const [filteredViewsData, setFilteredViewsData] = useState<any[]>([]);
+  const [apiStatus, setApiStatus] = useState<any>({
+    dailyCalls: 0,
+    maxCalls: 48,
+    remainingCalls: 48,
+    canMakeCall: true,
+    usingDemoData: false,
+    usingCachedData: false,
+    reason: 'Loading...',
+    showCallCount: true,
+    timeUntilNext: 0,
+    actualQuotaExceeded: false
+  });
 
   useEffect(() => {
     loadYouTubeData();
+    // Initialize daily data collection
+    dataCollectionService.initializeDailyCollection();
+  }, []);
+
+  // Load API status
+  useEffect(() => {
+    const loadApiStatus = async () => {
+      const status = await youtubeService.getApiCallStatus();
+      setApiStatus(status);
+    };
+    loadApiStatus();
   }, []);
 
   // Listen for configuration changes
@@ -27,6 +56,25 @@ const YouTubeStats: React.FC = () => {
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
+
+  // Update filtered data when filter changes
+  useEffect(() => {
+    if (analytics) {
+      const subscriberData = generateTimeFilteredData(
+        analytics.monthlySubscribers, 
+        selectedFilter, 
+        analytics.channelStats.subscriberCount
+      );
+      const viewsData = generateTimeFilteredData(
+        analytics.monthlyViews, 
+        selectedFilter, 
+        analytics.channelStats.viewCount,
+        'views'
+      );
+      setFilteredSubscriberData(subscriberData);
+      setFilteredViewsData(viewsData);
+    }
+  }, [selectedFilter, analytics]);
 
   const loadYouTubeData = async () => {
     try {
@@ -107,14 +155,62 @@ const YouTubeStats: React.FC = () => {
     );
   }
 
+
+  
+  // Check if we're using demo data or cached data due to API quota
+  const isUsingDemoData = analytics && 
+    (analytics.channelStats.channelName === 'Demo Channel' || 
+     analytics.channelStats.channelName === 'Sample Video Title 1');
+  const isUsingCachedData = apiStatus.usingCachedData;
+
   if (!analytics) {
     return null;
   }
 
-  const { channelStats, recentVideos, monthlyViews, monthlySubscribers } = analytics;
+  const { channelStats, recentVideos } = analytics;
 
   return (
     <div className="space-y-8">
+      {/* Data Status Notice */}
+      {(isUsingDemoData || isUsingCachedData) && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className={`border rounded-lg p-4 ${
+            isUsingCachedData 
+              ? 'bg-green-50 border-green-200' 
+              : 'bg-yellow-50 border-yellow-200'
+          }`}
+        >
+          <div className="flex items-center space-x-2">
+            <div className={`w-5 h-5 rounded-full flex items-center justify-center ${
+              isUsingCachedData ? 'bg-green-500' : 'bg-yellow-500'
+            }`}>
+              <span className="text-white text-xs font-bold">
+                {isUsingCachedData ? '✓' : '!'}
+              </span>
+            </div>
+            <div>
+              <h3 className={`text-sm font-semibold ${
+                isUsingCachedData ? 'text-green-900' : 'text-yellow-900'
+              }`}>
+                {isUsingCachedData ? 'Cached Data Active' : 'Demo Data Active'}
+              </h3>
+              <p className={`text-xs ${
+                isUsingCachedData ? 'text-green-700' : 'text-yellow-700'
+              }`}>
+                {isUsingCachedData 
+                  ? 'Showing last cached data due to API limits. Data will refresh when quota resets.'
+                  : 'YouTube API quota exceeded. Showing demo data. Quota resets daily.'
+                }
+              </p>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+
+
       {/* Channel Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -134,6 +230,25 @@ const YouTubeStats: React.FC = () => {
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
               <span>Refresh</span>
+            </button>
+            <button
+              onClick={() => {
+                const debug = youtubeService.debugCachedData();
+                console.log('Debug data:', debug);
+                alert('Check console for cached data debug info');
+              }}
+              className="flex items-center space-x-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+            >
+              <span>Debug Cache</span>
+            </button>
+            <button
+              onClick={() => {
+                youtubeService.cacheDemoDataAsReal();
+                alert('Demo data cached as real data. Refresh the page to see the effect.');
+              }}
+              className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            >
+              <span>Cache Demo Data</span>
             </button>
             <div className="text-right">
               <p className="text-3xl font-bold text-red-600">{formatNumber(channelStats.subscriberCount)}</p>
@@ -216,6 +331,14 @@ const YouTubeStats: React.FC = () => {
         </motion.div>
       </div>
 
+      {/* Chart Filters */}
+      <div className="mb-6">
+        <ChartFilters
+          selectedFilter={selectedFilter}
+          onFilterChange={setSelectedFilter}
+        />
+      </div>
+
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <motion.div
@@ -224,15 +347,15 @@ const YouTubeStats: React.FC = () => {
           className="bg-white rounded-xl shadow-lg p-6"
         >
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Subscriber Growth</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={monthlySubscribers}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Line type="monotone" dataKey="subscribers" stroke="#FF0000" strokeWidth={3} />
-            </LineChart>
-          </ResponsiveContainer>
+                      <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={filteredSubscriberData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Tooltip />
+                <Line type="monotone" dataKey="value" stroke="#FF0000" strokeWidth={3} />
+              </LineChart>
+            </ResponsiveContainer>
         </motion.div>
 
         <motion.div
@@ -241,15 +364,15 @@ const YouTubeStats: React.FC = () => {
           className="bg-white rounded-xl shadow-lg p-6"
         >
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Monthly Views</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={monthlyViews}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="views" fill="#FF0000" />
-            </BarChart>
-          </ResponsiveContainer>
+                      <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={filteredViewsData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="value" fill="#FF0000" />
+              </BarChart>
+            </ResponsiveContainer>
         </motion.div>
       </div>
 
@@ -303,6 +426,73 @@ const YouTubeStats: React.FC = () => {
               </div>
             </motion.div>
           ))}
+        </div>
+      </motion.div>
+
+            {/* API Status - Moved to end */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className={`border rounded-lg p-4 ${
+          apiStatus.actualQuotaExceeded 
+            ? 'bg-red-50 border-red-200' 
+            : apiStatus.canMakeCall 
+              ? 'bg-blue-50 border-blue-200' 
+              : 'bg-yellow-50 border-yellow-200'
+        }`}
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <div className={`w-5 h-5 rounded-full flex items-center justify-center ${
+              apiStatus.actualQuotaExceeded 
+                ? 'bg-red-500' 
+                : apiStatus.canMakeCall 
+                  ? 'bg-blue-500' 
+                  : 'bg-yellow-500'
+            }`}>
+              <span className="text-white text-xs font-bold">
+                {apiStatus.actualQuotaExceeded ? '!' : apiStatus.canMakeCall ? 'i' : '!'}
+              </span>
+            </div>
+            <div>
+              <h3 className={`text-sm font-semibold ${
+                apiStatus.actualQuotaExceeded 
+                  ? 'text-red-900' 
+                  : apiStatus.canMakeCall 
+                    ? 'text-blue-900' 
+                    : 'text-yellow-900'
+              }`}>
+                {apiStatus.actualQuotaExceeded ? 'API Quota Exceeded' : 'API Status'}
+              </h3>
+              <p className={`text-xs ${
+                apiStatus.actualQuotaExceeded 
+                  ? 'text-red-700' 
+                  : apiStatus.canMakeCall 
+                    ? 'text-blue-700' 
+                    : 'text-yellow-700'
+              }`}>
+                {apiStatus.showCallCount ? (
+                  `Daily calls: ${apiStatus.dailyCalls}/${apiStatus.maxCalls} (${apiStatus.remainingCalls} remaining)`
+                ) : (
+                  apiStatus.reason
+                )}
+              </p>
+            </div>
+          </div>
+          <div className="text-right">
+            <div className={`text-xs px-2 py-1 rounded ${
+              apiStatus.canMakeCall 
+                ? 'bg-green-100 text-green-800' 
+                : 'bg-red-100 text-red-800'
+            }`}>
+              {apiStatus.canMakeCall ? 'Ready' : 'Limited'}
+            </div>
+            {!apiStatus.canMakeCall && apiStatus.timeUntilNext && apiStatus.timeUntilNext > 0 && (
+              <div className="text-xs text-gray-500 mt-1">
+                {Math.ceil(apiStatus.timeUntilNext / 60000)}m remaining
+              </div>
+            )}
+          </div>
         </div>
       </motion.div>
     </div>

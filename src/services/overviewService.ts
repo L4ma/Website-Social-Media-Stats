@@ -19,7 +19,6 @@ class OverviewService {
 
       // Generate realistic data based on YouTube stats
       const currentSubscribers = youtubeAnalytics.channelStats.subscriberCount;
-      const currentViews = youtubeAnalytics.channelStats.viewCount;
       
       // Get current date and generate last 6 months
       const now = new Date();

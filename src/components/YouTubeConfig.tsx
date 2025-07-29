@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Youtube, Key, Link, Save, Eye, EyeOff } from 'lucide-react';
 import { youtubeConfig } from '../config/youtube';
+import { youtubeService } from '../services/youtubeService';
 
 interface YouTubeConfigProps {
   onConfigUpdate: (config: { channelId: string; apiKey: string; channelName: string; channelUrl: string }) => void;
@@ -38,7 +39,6 @@ const YouTubeConfig: React.FC<YouTubeConfigProps> = ({ onConfigUpdate }) => {
     }
 
     // Update the YouTube service configuration
-    const { youtubeService } = require('../services/youtubeService');
     youtubeService.updateConfig(config);
     
     onConfigUpdate(config);

@@ -1,13 +1,18 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { Users, Heart, Eye, MessageCircle, Share2, TrendingUp } from 'lucide-react';
+import ChartFilters, { TimeFilter } from './ChartFilters';
+import { generateTimeFilteredData } from '../utils/chartDataUtils';
 
 interface PlatformStatsProps {
   platform: 'threads' | 'instagram' | 'youtube';
 }
 
 const PlatformStats: React.FC<PlatformStatsProps> = ({ platform }) => {
+  const [selectedFilter, setSelectedFilter] = useState<TimeFilter>('6m');
+  const [filteredChartData, setFilteredChartData] = useState<any[]>([]);
+
   const platformData = {
     threads: {
       name: 'Threads',
@@ -64,6 +69,14 @@ const PlatformStats: React.FC<PlatformStatsProps> = ({ platform }) => {
 
   const data = platformData[platform];
 
+  // Update filtered data when filter changes
+  useEffect(() => {
+    const currentValue = platform === 'youtube' ? 14100 : 
+                        platform === 'instagram' ? 67800 : 45200;
+    const filteredData = generateTimeFilteredData(data.chartData, selectedFilter, currentValue);
+    setFilteredChartData(filteredData);
+  }, [selectedFilter, data.chartData, platform]);
+
   return (
     <div className="space-y-8">
       <motion.div
@@ -104,6 +117,14 @@ const PlatformStats: React.FC<PlatformStatsProps> = ({ platform }) => {
         ))}
       </div>
 
+      {/* Chart Filters */}
+      <div className="mb-6">
+        <ChartFilters
+          selectedFilter={selectedFilter}
+          onFilterChange={setSelectedFilter}
+        />
+      </div>
+
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <motion.div
@@ -112,15 +133,15 @@ const PlatformStats: React.FC<PlatformStatsProps> = ({ platform }) => {
           className="bg-white rounded-xl shadow-lg p-6"
         >
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Growth Trend</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={data.chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Line type="monotone" dataKey="followers" stroke={data.color} strokeWidth={3} />
-            </LineChart>
-          </ResponsiveContainer>
+                      <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={filteredChartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Tooltip />
+                <Line type="monotone" dataKey="value" stroke={data.color} strokeWidth={3} />
+              </LineChart>
+            </ResponsiveContainer>
         </motion.div>
 
         <motion.div
@@ -129,15 +150,15 @@ const PlatformStats: React.FC<PlatformStatsProps> = ({ platform }) => {
           className="bg-white rounded-xl shadow-lg p-6"
         >
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Engagement Overview</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={data.chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="engagement" fill={data.color} />
-            </BarChart>
-          </ResponsiveContainer>
+                      <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={filteredChartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="value" fill={data.color} />
+              </BarChart>
+            </ResponsiveContainer>
         </motion.div>
       </div>
     </div>

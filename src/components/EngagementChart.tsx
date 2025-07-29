@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { overviewService } from '../services/overviewService';
+import ChartFilters, { TimeFilter } from './ChartFilters';
+import { generateMultiPlatformData } from '../utils/chartDataUtils';
 
 const EngagementChart: React.FC = () => {
-  const [data, setData] = useState([
+  const [data, setData] = useState<any[]>([
     { month: 'Jan', threads: 12000, instagram: 35000, youtube: 45000 },
     { month: 'Feb', threads: 13500, instagram: 37000, youtube: 52000 },
     { month: 'Mar', threads: 14200, instagram: 39000, youtube: 58000 },
@@ -12,12 +14,17 @@ const EngagementChart: React.FC = () => {
     { month: 'May', threads: 16800, instagram: 45100, youtube: 72000 },
     { month: 'Jun', threads: 18200, instagram: 48500, youtube: 81000 },
   ]);
+  const [selectedFilter, setSelectedFilter] = useState<TimeFilter>('6m');
+  const [youtubeValue, setYoutubeValue] = useState(81000);
 
   useEffect(() => {
     const loadData = async () => {
       try {
         const overviewData = await overviewService.getOverviewData();
         setData(overviewData.engagementData);
+        // Extract YouTube engagement value for filtering
+        const youtubeEngagement = overviewData.engagementData[overviewData.engagementData.length - 1]?.youtube || 81000;
+        setYoutubeValue(youtubeEngagement);
       } catch (error) {
         console.error('Error loading engagement data:', error);
       }
@@ -25,6 +32,12 @@ const EngagementChart: React.FC = () => {
 
     loadData();
   }, []);
+
+  useEffect(() => {
+    // Regenerate data when filter changes
+    const filteredData = generateMultiPlatformData(selectedFilter, youtubeValue);
+    setData(filteredData);
+  }, [selectedFilter, youtubeValue]);
 
   return (
     <motion.div
@@ -53,15 +66,23 @@ const EngagementChart: React.FC = () => {
         </div>
       </div>
 
+      {/* Chart Filters */}
+      <div className="mb-6">
+        <ChartFilters
+          selectedFilter={selectedFilter}
+          onFilterChange={setSelectedFilter}
+        />
+      </div>
+
       <ResponsiveContainer width="100%" height={300}>
         <LineChart data={data}>
           <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-          <XAxis 
-            dataKey="month" 
-            axisLine={false}
-            tickLine={false}
-            tick={{ fontSize: 12, fill: '#6b7280' }}
-          />
+                        <XAxis 
+                dataKey="date" 
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 12, fill: '#6b7280' }}
+              />
           <YAxis 
             axisLine={false}
             tickLine={false}

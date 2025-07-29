@@ -2,16 +2,16 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import Header from './components/Header';
 import StatsOverview from './components/StatsOverview';
-import PlatformStats from './components/PlatformStats';
+
 import EngagementChart from './components/EngagementChart';
 import GrowthChart from './components/GrowthChart';
 import AudienceChart from './components/AudienceChart';
 import YouTubeStats from './components/YouTubeStats';
-import YouTubeConfig from './components/YouTubeConfig';
-import { youtubeService } from './services/youtubeService';
+import Settings from './components/Settings';
+
 
 const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'threads' | 'instagram' | 'youtube' | 'youtube-config'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'threads' | 'instagram' | 'youtube' | 'settings'>('overview');
 
 
   return (
@@ -23,10 +23,8 @@ const App: React.FC = () => {
         <div className="flex flex-wrap gap-2 mb-8">
           {[
             { id: 'overview', label: 'Overview', icon: '📊' },
-            { id: 'threads', label: 'Threads', icon: '🧵' },
-            { id: 'instagram', label: 'Instagram', icon: '📸' },
             { id: 'youtube', label: 'YouTube', icon: '📺' },
-            { id: 'youtube-config', label: 'YouTube Config', icon: '⚙️' },
+            { id: 'settings', label: 'Settings', icon: '⚙️' },
           ].map((tab) => (
             <motion.button
               key={tab.id}
@@ -64,24 +62,12 @@ const App: React.FC = () => {
             </>
           )}
           
-          {activeTab === 'threads' && (
-            <PlatformStats platform="threads" />
-          )}
-          
-          {activeTab === 'instagram' && (
-            <PlatformStats platform="instagram" />
-          )}
-          
           {activeTab === 'youtube' && (
             <YouTubeStats />
           )}
           
-          {activeTab === 'youtube-config' && (
-            <YouTubeConfig onConfigUpdate={(config) => {
-              console.log('YouTube config updated:', config);
-              // Update the YouTube service configuration
-              youtubeService.updateConfig(config);
-            }} />
+          {activeTab === 'settings' && (
+            <Settings />
           )}
         </motion.div>
       </main>
