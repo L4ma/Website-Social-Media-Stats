@@ -20,50 +20,110 @@ class DataCollectionService {
   // Check if we should collect data today
   shouldCollectToday(): boolean {
     const lastCollection = localStorage.getItem(this.DAILY_COLLECTION_KEY);
-    if (!lastCollection) return true;
+    console.log('DataCollectionService: Checking if should collect today');
+    console.log('DataCollectionService: Last collection date:', lastCollection);
+    
+    if (!lastCollection) {
+      console.log('DataCollectionService: No last collection found, should collect today');
+      return true;
+    }
 
     const lastDate = new Date(lastCollection);
     const today = new Date();
     
-    // Check if it's a different day
-    return lastDate.getDate() !== today.getDate() || 
-           lastDate.getMonth() !== today.getMonth() || 
-           lastDate.getFullYear() !== today.getFullYear();
+    // Use local date strings for comparison
+    const lastDateString = lastDate.toLocaleDateString('en-CA');
+    const todayDateString = today.toLocaleDateString('en-CA');
+    
+    console.log('DataCollectionService: Last collection date object:', lastDate);
+    console.log('DataCollectionService: Today date object:', today);
+    console.log('DataCollectionService: Date comparison:', {
+      lastDateString,
+      todayDateString,
+      lastDate: lastDate.getDate(),
+      todayDate: today.getDate(),
+      lastMonth: lastDate.getMonth(),
+      todayMonth: today.getMonth(),
+      lastYear: lastDate.getFullYear(),
+      todayYear: today.getFullYear()
+    });
+    
+    // Check if it's a different day using local date strings
+    const shouldCollect = lastDateString !== todayDateString;
+           
+    console.log('DataCollectionService: Should collect today:', shouldCollect);
+    return shouldCollect;
   }
 
   // Collect and save today's data
   async collectDailyData(): Promise<void> {
+    console.log('DataCollectionService: Starting daily data collection');
+    
+    // Check if YouTube service is configured
+    const youtubeConfig = youtubeService.getConfig();
+    console.log('DataCollectionService: YouTube config:', youtubeConfig);
+    
+    if (!youtubeConfig || !youtubeConfig.apiKey || !youtubeConfig.channelId) {
+      console.error('DataCollectionService: YouTube not properly configured');
+      throw new Error('YouTube service not properly configured. Please set up your API key and channel ID first.');
+    }
+    
     try {
+      console.log('DataCollectionService: Fetching channel stats from YouTube service');
       const channelStats = await youtubeService.getChannelStats();
+      console.log('DataCollectionService: Received channel stats:', channelStats);
+      
+      if (!channelStats) {
+        throw new Error('Failed to fetch channel stats from YouTube service');
+      }
       
       const todayStats: DailyStats = {
-        date: new Date().toISOString().split('T')[0], // YYYY-MM-DD format
+        date: new Date().toLocaleDateString('en-CA'), // YYYY-MM-DD format in local timezone
         subscriberCount: channelStats.subscriberCount,
         viewCount: channelStats.viewCount,
         videoCount: channelStats.videoCount,
         channelName: channelStats.channelName,
       };
+      
+      console.log('DataCollectionService: Created today stats:', todayStats);
 
       // Get existing historical data
       const historicalData = this.getHistoricalData();
+      console.log('DataCollectionService: Current historical data:', historicalData);
       
       // Add today's data if it doesn't exist
       const existingIndex = historicalData.dailyStats.findIndex(
         stat => stat.date === todayStats.date
       );
       
+      console.log('DataCollectionService: Existing index for today:', existingIndex);
+      
       if (existingIndex === -1) {
+        console.log('DataCollectionService: Adding today\'s data to historical data');
         historicalData.dailyStats.push(todayStats);
         historicalData.lastUpdated = new Date().toISOString();
         
         // Save updated data
+        console.log('DataCollectionService: Saving to localStorage...');
         localStorage.setItem(this.STORAGE_KEY, JSON.stringify(historicalData));
         localStorage.setItem(this.DAILY_COLLECTION_KEY, new Date().toISOString());
         
-        console.log('Daily data collected:', todayStats);
+        console.log('DataCollectionService: Daily data collected and saved:', todayStats);
+        console.log('DataCollectionService: Updated historical data:', historicalData);
+        console.log('DataCollectionService: localStorage keys saved:', {
+          STORAGE_KEY: this.STORAGE_KEY,
+          DAILY_COLLECTION_KEY: this.DAILY_COLLECTION_KEY
+        });
+      } else {
+        console.log('DataCollectionService: Today\'s data already exists, skipping');
       }
     } catch (error) {
-      console.error('Error collecting daily data:', error);
+      console.error('DataCollectionService: Error collecting daily data:', error);
+      console.error('DataCollectionService: Error details:', {
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
+      });
+      throw error; // Re-throw to let the UI handle the error
     }
   }
 

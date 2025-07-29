@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Settings as SettingsIcon, Youtube, Instagram, Database, Shield, Bell } from 'lucide-react';
+import { Settings as SettingsIcon, Youtube, Instagram, Database, Shield, Bell, Key } from 'lucide-react';
 import YouTubeConfig from './YouTubeConfig';
+import YouTubeOAuthConfigComponent from './YouTubeOAuthConfig';
 import InstagramConfigComponent from './InstagramConfigComponent';
 import DataCollectionStatus from './DataCollectionStatus';
 import type { InstagramConfig as InstagramConfigType } from '../services/instagramService';
@@ -10,6 +11,7 @@ type SettingsTab = 'youtube' | 'instagram' | 'status' | 'notifications' | 'priva
 
 const Settings: React.FC = () => {
   const [activeTab, setActiveTab] = useState<SettingsTab>('youtube');
+  const [youtubeMethod, setYoutubeMethod] = useState<'api' | 'oauth'>('api');
 
   const tabs = [
     { id: 'youtube', label: 'YouTube', icon: <Youtube className="w-4 h-4" /> },
@@ -34,13 +36,57 @@ const Settings: React.FC = () => {
                 <h3 className="text-lg font-semibold text-blue-900">YouTube Configuration</h3>
               </div>
               <p className="text-sm text-blue-700">
-                Configure your YouTube API credentials to access real channel statistics and enable daily data collection.
+                Choose between API key authentication or OAuth 2.0 to access your YouTube channel statistics.
               </p>
             </div>
-                         <YouTubeConfig onConfigUpdate={(config) => {
-               // Handle config update if needed
-               console.log('YouTube config updated:', config);
-             }} />
+
+            {/* YouTube Method Selection */}
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <h4 className="text-lg font-semibold text-gray-900 mb-4">Authentication Method</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button
+                  onClick={() => setYoutubeMethod('api')}
+                  className={`p-4 rounded-lg border-2 transition-colors ${
+                    youtubeMethod === 'api'
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="flex items-center space-x-3">
+                    <Key className="w-6 h-6 text-blue-600" />
+                    <div className="text-left">
+                      <h5 className="font-semibold text-gray-900">API Key</h5>
+                      <p className="text-sm text-gray-600">Use YouTube Data API v3 with API key</p>
+                    </div>
+                  </div>
+                </button>
+                <button
+                  onClick={() => setYoutubeMethod('oauth')}
+                  className={`p-4 rounded-lg border-2 transition-colors ${
+                    youtubeMethod === 'oauth'
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="flex items-center space-x-3">
+                    <Shield className="w-6 h-6 text-green-600" />
+                    <div className="text-left">
+                      <h5 className="font-semibold text-gray-900">OAuth 2.0</h5>
+                      <p className="text-sm text-gray-600">Secure login with Google account</p>
+                    </div>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            {/* YouTube Configuration */}
+            {youtubeMethod === 'api' ? (
+              <YouTubeConfig onConfigUpdate={(config) => {
+                console.log('YouTube config updated:', config);
+              }} />
+            ) : (
+              <YouTubeOAuthConfigComponent />
+            )}
           </motion.div>
         );
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, Database, RefreshCw, Info } from 'lucide-react';
 import { dataCollectionService, HistoricalData } from '../services/dataCollectionService';
+import { youtubeService } from '../services/youtubeService';
 
 const DataCollectionStatus: React.FC = () => {
   const [historicalData, setHistoricalData] = useState<HistoricalData | null>(null);
@@ -13,21 +14,37 @@ const DataCollectionStatus: React.FC = () => {
   }, []);
 
   const loadData = () => {
+    console.log('DataCollectionStatus: Loading data');
     const data = dataCollectionService.getHistoricalData();
+    console.log('DataCollectionStatus: Historical data loaded:', data);
     setHistoricalData(data);
     
     const lastCollectionDate = localStorage.getItem('youtube_daily_collection');
+    console.log('DataCollectionStatus: Last collection date from localStorage:', lastCollectionDate);
     setLastCollection(lastCollectionDate);
   };
 
+  const debugLocalStorage = () => {
+    console.log('DataCollectionStatus: Debugging localStorage:');
+    console.log('youtube_historical_data:', localStorage.getItem('youtube_historical_data'));
+    console.log('youtube_daily_collection:', localStorage.getItem('youtube_daily_collection'));
+    console.log('youtubeApiTracking:', localStorage.getItem('youtubeApiTracking'));
+    console.log('youtubeConfig:', localStorage.getItem('youtubeConfig'));
+  };
+
   const handleManualCollection = async () => {
+    console.log('DataCollectionStatus: === BUTTON CLICKED ===');
+    console.log('DataCollectionStatus: Manual collection button clicked');
     setIsCollecting(true);
     try {
+      console.log('DataCollectionStatus: Calling dataCollectionService.collectDailyData()');
       await dataCollectionService.collectDailyData();
+      console.log('DataCollectionStatus: Data collection completed successfully');
       loadData();
     } catch (error) {
-      console.error('Error collecting data:', error);
+      console.error('DataCollectionStatus: Error collecting data:', error);
     } finally {
+      console.log('DataCollectionStatus: Setting isCollecting to false');
       setIsCollecting(false);
     }
   };
@@ -53,6 +70,30 @@ const DataCollectionStatus: React.FC = () => {
         >
           <RefreshCw className={`w-4 h-4 ${isCollecting ? 'animate-spin' : ''}`} />
           <span>{isCollecting ? 'Collecting...' : 'Collect Now'}</span>
+        </button>
+        <button
+          onClick={debugLocalStorage}
+          className="flex items-center space-x-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+        >
+          <Info className="w-4 h-4" />
+          <span>Debug</span>
+        </button>
+        <button
+          onClick={async () => {
+            console.log('DataCollectionStatus: Testing YouTube service...');
+            try {
+              const config = youtubeService.getConfig();
+              console.log('DataCollectionStatus: YouTube config:', config);
+              const stats = await youtubeService.getChannelStats();
+              console.log('DataCollectionStatus: YouTube stats test:', stats);
+            } catch (error) {
+              console.error('DataCollectionStatus: YouTube service test failed:', error);
+            }
+          }}
+          className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+        >
+          <RefreshCw className="w-4 h-4" />
+          <span>Test YouTube</span>
         </button>
       </div>
 
