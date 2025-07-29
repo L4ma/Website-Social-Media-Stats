@@ -49,11 +49,16 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
         
+    - name: Convert repository name to lowercase
+      id: repo
+      run: |
+        echo "repo_lowercase=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+        
     - name: Extract metadata
       id: meta
       uses: docker/metadata-action@v5
       with:
-        images: ghcr.io/${{ github.repository }}
+        images: ghcr.io/${{ steps.repo.outputs.repo_lowercase }}
         tags: |
           type=ref,event=branch
           type=ref,event=pr
@@ -73,5 +78,5 @@ jobs:
         
     - name: Test the published image
       run: |
-        docker pull ghcr.io/${{ github.repository }}:latest
-        docker run --rm ghcr.io/${{ github.repository }}:latest wget --quiet --tries=1 --spider http://localhost/health || exit 1 
+        docker pull ghcr.io/${{ steps.repo.outputs.repo_lowercase }}:latest
+        docker run --rm ghcr.io/${{ steps.repo.outputs.repo_lowercase }}:latest wget --quiet --tries=1 --spider http://localhost/health || exit 1 
