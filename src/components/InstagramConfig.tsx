@@ -1,181 +1,222 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Instagram, CheckCircle, AlertCircle, Info, ExternalLink, Lock } from 'lucide-react';
+import { Instagram, Key, User, Link, AlertCircle, CheckCircle } from 'lucide-react';
 import { instagramService } from '../services/instagramService';
-import type { InstagramConfig as InstagramConfigType } from '../services/instagramService';
+import type { InstagramConfig } from '../services/instagramService';
 
-interface InstagramConfigComponentProps {
-  onConfigUpdate?: (config: InstagramConfigType) => void;
+interface InstagramConfigProps {
+  onConfigUpdate: (config: InstagramConfig) => void;
 }
 
-const InstagramConfig: React.FC<InstagramConfigComponentProps> = ({ onConfigUpdate }) => {
-  const [isConnected, setIsConnected] = useState(false);
-  const [isConnecting, setIsConnecting] = useState(false);
+const InstagramConfig: React.FC<InstagramConfigProps> = ({ onConfigUpdate }) => {
+  const [config, setConfig] = useState<InstagramConfig>({
+    clientId: '',
+    clientSecret: '',
+    redirectUri: `${window.location.origin}/instagram-callback`,
+    accessToken: '',
+    userId: '',
+    username: ''
+  });
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    setIsConnected(instagramService.isConnected());
+    const savedConfig = instagramService.getConfig();
+    setConfig(savedConfig);
+    setIsConnected(instagramService.isAuthenticated());
   }, []);
 
-  const handleOAuthLogin = () => {
-    setIsConnecting(true);
-    instagramService.initiateOAuth();
+  const handleSave = () => {
+    instagramService.updateConfig(config);
+    onConfigUpdate(config);
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 3000);
+  };
+
+  const handleConnect = () => {
+    if (!config.clientId || !config.clientSecret) {
+      alert('Please enter your Instagram App credentials first');
+      return;
+    }
+    
+    const oauthUrl = instagramService.getOAuthUrl();
+    window.open(oauthUrl, '_blank', 'width=600,height=600');
   };
 
   const handleDisconnect = () => {
-    instagramService.disconnect();
+    instagramService.logout();
+    setConfig({
+      clientId: config.clientId,
+      clientSecret: config.clientSecret,
+      redirectUri: config.redirectUri,
+      accessToken: '',
+      userId: '',
+      username: ''
+    });
     setIsConnected(false);
-    setShowSuccess(false);
   };
 
+  const handleOAuthCallback = async (code: string) => {
+    setLoading(true);
+    try {
+      const success = await instagramService.handleOAuthCallback(code);
+      if (success) {
+        const updatedConfig = instagramService.getConfig();
+        setConfig(updatedConfig);
+        setIsConnected(true);
+        alert('Instagram connected successfully!');
+      } else {
+        alert('Failed to connect Instagram. Please try again.');
+      }
+    } catch (error) {
+      console.error('OAuth callback error:', error);
+      alert('Error connecting Instagram. Please check your credentials.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  // Check for OAuth callback
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    const state = urlParams.get('state');
+    
+    if (code && state) {
+      handleOAuthCallback(code);
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
 
   return (
     <div className="space-y-6">
-      {/* Connection Status */}
-      <div className={`rounded-lg p-4 ${isConnected ? 'bg-green-50 border border-green-200' : 'bg-yellow-50 border border-yellow-200'}`}>
-        <div className="flex items-center space-x-2">
-          {isConnected ? (
-            <CheckCircle className="w-5 h-5 text-green-600" />
-          ) : (
-            <AlertCircle className="w-5 h-5 text-yellow-600" />
-          )}
-          <div>
-            <h3 className={`font-semibold ${isConnected ? 'text-green-900' : 'text-yellow-900'}`}>
-              {isConnected ? 'Connected to Instagram' : 'Not Connected'}
-            </h3>
-            <p className={`text-sm ${isConnected ? 'text-green-700' : 'text-yellow-700'}`}>
-              {isConnected 
-                ? 'Your Instagram account is connected via OAuth' 
-                : 'Connect your Instagram account to access real data'
-              }
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* OAuth Connection */}
-      <div className="bg-white rounded-xl shadow-lg p-6">
-        <div className="flex items-center space-x-2 mb-4">
-          <Instagram className="w-5 h-5 text-pink-600" />
-          <h3 className="text-lg font-semibold text-gray-900">Instagram OAuth Connection</h3>
-        </div>
-
-        <div className="space-y-4">
-          {!isConnected ? (
-            <div className="space-y-4">
-              <div className="bg-blue-50 rounded-lg p-4">
-                <div className="flex items-start space-x-2">
-                  <Info className="w-4 h-4 text-blue-600 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-blue-900">OAuth Authentication</p>
-                    <p className="text-xs text-blue-700 mt-1">
-                      Connect your Instagram account securely using OAuth. This allows us to access your public profile data and recent posts.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-gray-50 rounded-lg p-4">
-                <div className="flex items-start space-x-2">
-                  <Lock className="w-4 h-4 text-gray-600 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">Security & Privacy</p>
-                    <ul className="text-xs text-gray-700 mt-1 space-y-1">
-                      <li>• We only access your public profile data</li>
-                      <li>• No passwords are stored</li>
-                      <li>• You can revoke access anytime</li>
-                      <li>• Data is stored locally in your browser</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-
-              <button
-                onClick={handleOAuthLogin}
-                disabled={isConnecting}
-                className="w-full flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-lg hover:from-pink-600 hover:to-purple-700 transition-all duration-200 disabled:opacity-50"
-              >
-                <Instagram className="w-5 h-5" />
-                <span>{isConnecting ? 'Connecting...' : 'Connect Instagram Account'}</span>
-                <ExternalLink className="w-4 h-4" />
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="bg-green-50 rounded-lg p-4">
-                <div className="flex items-center space-x-2">
-                  <CheckCircle className="w-5 h-5 text-green-600" />
-                  <div>
-                    <p className="text-sm font-medium text-green-900">Successfully Connected</p>
-                    <p className="text-xs text-green-700">
-                      Your Instagram account is now connected. You can access your data in the Instagram tab.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex space-x-3">
-                <button
-                  onClick={handleDisconnect}
-                  className="flex-1 px-4 py-2 border border-red-300 text-red-700 rounded-lg hover:bg-red-50 transition-colors"
-                >
-                  Disconnect Account
-                </button>
-                <button
-                  onClick={() => window.open('https://www.instagram.com/accounts/manage_access/', '_blank')}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  Manage Access
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
       {/* Success Message */}
       {showSuccess && (
         <motion.div
-          initial={{ opacity: 0, y: 10 }}
+          initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="bg-green-50 border border-green-200 rounded-lg p-4"
         >
           <div className="flex items-center space-x-2">
             <CheckCircle className="w-5 h-5 text-green-600" />
-            <span className="text-green-800 font-medium">
-              Instagram account connected successfully!
-            </span>
+            <span className="text-green-800 font-medium">Configuration saved successfully!</span>
           </div>
         </motion.div>
       )}
 
-      {/* Setup Instructions */}
-      <div className="bg-gray-50 rounded-lg p-4">
-        <h4 className="font-semibold text-gray-900 mb-2">How to Connect Your Instagram Account</h4>
-        <ol className="text-sm text-gray-700 space-y-1">
-          <li>1. Click "Connect Instagram Account" above</li>
-          <li>2. You'll be redirected to Instagram's OAuth page</li>
-          <li>3. Log in to your Instagram account and authorize access</li>
-          <li>4. You'll be redirected back to this app</li>
-          <li>5. Your Instagram data will be available in the Instagram tab</li>
+      {/* App Setup Instructions */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="flex items-center space-x-2 mb-2">
+          <AlertCircle className="w-5 h-5 text-blue-600" />
+          <h3 className="text-sm font-semibold text-blue-900">Instagram App Setup</h3>
+        </div>
+        <p className="text-xs text-blue-700 mb-3">
+          To connect Instagram, you need to create an Instagram Basic Display app:
+        </p>
+        <ol className="text-xs text-blue-700 space-y-1 list-decimal list-inside">
+          <li>Go to <a href="https://developers.facebook.com/" target="_blank" rel="noopener noreferrer" className="underline">Facebook Developers</a></li>
+          <li>Create a new app → Instagram Basic Display</li>
+          <li>Add Instagram Basic Display product</li>
+          <li>Configure OAuth Redirect URIs: <code className="bg-blue-100 px-1 rounded">{config.redirectUri}</code></li>
+          <li>Copy your App ID and App Secret below</li>
         </ol>
       </div>
 
-      {/* Demo Notice */}
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-        <div className="flex items-start space-x-2">
-          <Info className="w-4 h-4 text-yellow-600 mt-0.5" />
-          <div>
-            <p className="text-sm font-medium text-yellow-900">Demo Mode</p>
-            <p className="text-xs text-yellow-700 mt-1">
-              Currently in demo mode. To enable real Instagram OAuth, you'll need to:
-              <br />• Create an Instagram app in Meta for Developers
-              <br />• Configure the OAuth redirect URI
-              <br />• Set up a backend server to handle token exchange
-            </p>
+      {/* App Credentials */}
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            <Key className="w-4 h-4 inline mr-1" />
+            Instagram App ID
+          </label>
+          <input
+            type="text"
+            value={config.clientId}
+            onChange={(e) => setConfig({ ...config, clientId: e.target.value })}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+            placeholder="Enter your Instagram App ID"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            <Key className="w-4 h-4 inline mr-1" />
+            Instagram App Secret
+          </label>
+          <input
+            type="password"
+            value={config.clientSecret}
+            onChange={(e) => setConfig({ ...config, clientSecret: e.target.value })}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+            placeholder="Enter your Instagram App Secret"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            <Link className="w-4 h-4 inline mr-1" />
+            Redirect URI
+          </label>
+          <input
+            type="text"
+            value={config.redirectUri}
+            onChange={(e) => setConfig({ ...config, redirectUri: e.target.value })}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+            placeholder="OAuth redirect URI"
+          />
+        </div>
+      </div>
+
+      {/* Connection Status */}
+      {isConnected && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <CheckCircle className="w-5 h-5 text-green-600" />
+              <div>
+                <h3 className="text-sm font-semibold text-green-900">Connected to Instagram</h3>
+                <p className="text-xs text-green-700">
+                  {config.username ? `@${config.username}` : 'User authenticated'}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={handleDisconnect}
+              className="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+            >
+              Disconnect
+            </button>
           </div>
         </div>
+      )}
+
+      {/* Action Buttons */}
+      <div className="flex space-x-3">
+        <button
+          onClick={handleSave}
+          className="flex-1 px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors"
+        >
+          Save Configuration
+        </button>
+        
+        {!isConnected ? (
+          <button
+            onClick={handleConnect}
+            disabled={!config.clientId || !config.clientSecret || loading}
+            className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+          >
+            {loading ? 'Connecting...' : 'Connect Instagram'}
+          </button>
+        ) : (
+          <button
+            onClick={() => window.open('https://instagram.com', '_blank')}
+            className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+          >
+            View Profile
+          </button>
+        )}
       </div>
     </div>
   );

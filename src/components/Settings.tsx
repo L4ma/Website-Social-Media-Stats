@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Settings as SettingsIcon, Youtube, Database, Shield, Bell } from 'lucide-react';
+import { Settings as SettingsIcon, Youtube, Instagram, Database, Shield, Bell } from 'lucide-react';
 import YouTubeConfig from './YouTubeConfig';
+import InstagramConfig from './InstagramConfig';
 import DataCollectionStatus from './DataCollectionStatus';
 
-type SettingsTab = 'youtube' | 'status' | 'notifications' | 'privacy';
+type SettingsTab = 'youtube' | 'instagram' | 'status' | 'notifications' | 'privacy';
 
 const Settings: React.FC = () => {
   const [activeTab, setActiveTab] = useState<SettingsTab>('youtube');
 
   const tabs = [
     { id: 'youtube', label: 'YouTube', icon: <Youtube className="w-4 h-4" /> },
+    { id: 'instagram', label: 'Instagram', icon: <Instagram className="w-4 h-4" /> },
     { id: 'status', label: 'Data Status', icon: <Database className="w-4 h-4" /> },
     { id: 'notifications', label: 'Notifications', icon: <Bell className="w-4 h-4" /> },
     { id: 'privacy', label: 'Privacy', icon: <Shield className="w-4 h-4" /> },
@@ -41,7 +43,28 @@ const Settings: React.FC = () => {
           </motion.div>
         );
 
-
+      case 'instagram':
+        return (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-6"
+          >
+            <div className="bg-pink-50 rounded-lg p-4 mb-6">
+              <div className="flex items-center space-x-2 mb-2">
+                <Instagram className="w-5 h-5 text-pink-600" />
+                <h3 className="text-lg font-semibold text-pink-900">Instagram Configuration</h3>
+              </div>
+              <p className="text-sm text-pink-700">
+                Configure your Instagram OAuth credentials to access real profile data and recent posts.
+              </p>
+            </div>
+            <InstagramConfig onConfigUpdate={(config) => {
+              // Handle config update if needed
+              console.log('Instagram config updated:', config);
+            }} />
+          </motion.div>
+        );
 
       case 'status':
         return (
@@ -80,6 +103,27 @@ const Settings: React.FC = () => {
                   <div className="flex justify-between">
                     <span className="text-sm text-gray-600">Last Update:</span>
                     <span className="text-sm font-medium text-gray-900">Today</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-lg p-6">
+                <div className="flex items-center space-x-2 mb-4">
+                  <Instagram className="w-5 h-5 text-pink-600" />
+                  <h4 className="font-semibold text-gray-900">Instagram</h4>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Status:</span>
+                    <span className="text-sm font-medium text-yellow-600">Not Connected</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Data Collection:</span>
+                    <span className="text-sm font-medium text-gray-600">Inactive</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Last Update:</span>
+                    <span className="text-sm font-medium text-gray-600">Never</span>
                   </div>
                 </div>
               </div>

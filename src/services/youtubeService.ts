@@ -282,10 +282,10 @@ class YouTubeService {
     const minutesUntilNext = Math.ceil(timeUntilNextCall / 60000);
     
     // Determine the actual status
-    let reason = 'Ready';
     let canMakeCall = true;
     let showCallCount = true;
     
+    let reason = 'Ready';
     if (actualQuotaExceeded) {
       reason = 'YouTube API quota exceeded - wait 24 hours';
       canMakeCall = false;

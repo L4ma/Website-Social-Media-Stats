@@ -7,11 +7,12 @@ import EngagementChart from './components/EngagementChart';
 import GrowthChart from './components/GrowthChart';
 import AudienceChart from './components/AudienceChart';
 import YouTubeStats from './components/YouTubeStats';
+import InstagramStats from './components/InstagramStats';
 import Settings from './components/Settings';
 
 
 const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'threads' | 'instagram' | 'youtube' | 'settings'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'youtube' | 'instagram' | 'settings'>('overview');
 
 
   return (
@@ -24,6 +25,7 @@ const App: React.FC = () => {
           {[
             { id: 'overview', label: 'Overview', icon: '📊' },
             { id: 'youtube', label: 'YouTube', icon: '📺' },
+            { id: 'instagram', label: 'Instagram', icon: '📷' },
             { id: 'settings', label: 'Settings', icon: '⚙️' },
           ].map((tab) => (
             <motion.button
@@ -64,6 +66,10 @@ const App: React.FC = () => {
           
           {activeTab === 'youtube' && (
             <YouTubeStats />
+          )}
+          
+          {activeTab === 'instagram' && (
+            <InstagramStats />
           )}
           
           {activeTab === 'settings' && (
