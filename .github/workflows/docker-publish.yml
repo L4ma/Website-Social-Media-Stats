@@ -22,8 +22,8 @@ jobs:
       run: npm run build
       env:
         REACT_APP_VERSION: ${{ env.npm_package_version }}
-        REACT_APP_GITHUB_VERSION: ${{ github.ref_name }}
-        REACT_APP_GITHUB_TAG: ${{ github.ref }}
+        REACT_APP_GITHUB_VERSION: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || '' }}
+        REACT_APP_GITHUB_TAG: ${{ startsWith(github.ref, 'refs/tags/') && github.ref || '' }}
   publish:
     needs: test
     runs-on: ubuntu-latest
