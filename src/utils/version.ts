@@ -23,7 +23,7 @@ export const getVersion = (): string => {
   }
   
   // Fallback to package.json version
-  const fallbackVersion = process.env.REACT_APP_VERSION || '0.0.5';
+  const fallbackVersion = process.env.REACT_APP_VERSION || '0.0.6';
   console.log('Using fallback version:', fallbackVersion);
   return fallbackVersion;
 }; 
