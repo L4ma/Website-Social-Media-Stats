@@ -1,270 +1,184 @@
-# 📊 Social Media Statistics Dashboard
+# Social Media Statistics Dashboard
 
-A modern, responsive web application for tracking and visualizing social media statistics across multiple platforms including YouTube and Instagram.
+A modern web application for tracking and visualizing social media statistics across multiple platforms including YouTube, Instagram, and Threads.
 
 ## 🚀 Quick Start
 
-### Using GitHub Container Registry
+### Docker Compose (Recommended)
 ```bash
-# Pull the latest image
-docker pull ghcr.io/l4ma/website-social-media-stats:latest
-
-# Run the container
-docker run -d -p 3000:80 --name social-media-stats ghcr.io/l4ma/website-social-media-stats:latest
-
-# Access the application
-open http://localhost:3000
+docker-compose up -d
 ```
+Access the application at http://localhost:3000
 
-### Using Docker Compose
+### Development Mode
 ```bash
-# Create docker-compose.yml
-cat > docker-compose.yml << EOF
-version: '3.8'
-services:
-  social-media-stats:
-    image: ghcr.io/l4ma/website-social-media-stats:latest
-    container_name: social-media-stats
-    ports:
-      - "3000:80"
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-EOF
-
-# Start the application
-docker compose up -d
+npm install
+npm start
 ```
 
 ### Interactive Setup
 ```bash
-# Run the interactive setup script
 chmod +x install-docker-compose.sh
 ./install-docker-compose.sh
-```
-
-## 📊 Features
-
-### ✅ Connected Platforms
-- **YouTube**: Channel statistics, video analytics, subscriber growth
-- **Instagram**: Profile data, post engagement, follower analytics
-- **Overview**: Combined statistics across all platforms
-
-### ✅ Data Visualization
-- **Interactive Charts**: Real-time data visualization with Recharts
-- **Time Filters**: 7 days, 30 days, 3 months, 6 months, 1 year
-- **Growth Trends**: Visual representation of platform growth
-
-### ✅ User Experience
-- **Modern UI**: Clean, responsive design with Tailwind CSS
-- **Real-time Updates**: Live data refresh and status monitoring
-- **Mobile Responsive**: Works perfectly on all devices
-
-## 🔧 Configuration
-
-### YouTube Setup
-1. Get your YouTube Data API v3 key from [Google Cloud Console](https://console.cloud.google.com/)
-2. Find your YouTube Channel ID
-3. Go to Settings → YouTube Configuration
-4. Enter your API key and Channel ID
-5. Save configuration
-
-### Instagram Setup
-1. Go to Settings → Instagram Configuration
-2. Click "Connect Instagram" for demo mode
-3. Or configure OAuth for real data access
-
-## 📈 Data Collection
-
-### Daily Data Collection
-- **Automatic**: Collects daily statistics when configured
-- **Historical**: Builds historical data over time
-- **Local Storage**: Data persists in browser localStorage
-- **API Quota Management**: Prevents exceeding API limits
-
-### API Quota Management
-- **YouTube**: 4 calls per day maximum (conservative)
-- **Rate Limiting**: 6 hours between calls
-- **Smart Caching**: Uses cached data when API limits reached
-- **Demo Data**: Falls back to realistic demo data
-
-## 🛠️ Development
-
-### Prerequisites
-- Node.js 18+ 
-- npm or yarn
-- Docker (optional)
-
-### Local Development
-```bash
-# Clone the repository
-git clone https://github.com/L4ma/Website-Social-Media-Stats.git
-cd Website-Social-Media-Stats
-
-# Install dependencies
-npm install
-
-# Start development server
-npm start
-
-# Build for production
-npm run build
-
-# Run tests
-npm test
-
-# Run linter
-npm run lint
-```
-
-### Docker Development
-```bash
-# Build development image
-docker build -t social-media-stats:dev .
-
-# Run with volume mounting
-docker run -v $(pwd):/app -p 3000:3000 \
-  -e NODE_ENV=development \
-  social-media-stats:dev npm start
 ```
 
 ## 🐳 Docker Setup
 
 ### Prerequisites
 - Docker Desktop installed and running
-- Git repository cloned
+- Docker Compose (usually included with Docker Desktop)
 
-### Quick Start
+### Quick Commands
 ```bash
-# Simple Docker run
+# Pull and run the latest image
+docker pull ghcr.io/l4ma/website-social-media-stats:latest
 docker run -d -p 3000:80 ghcr.io/l4ma/website-social-media-stats:latest
 
-# With Docker Compose
-docker compose up -d
-
-# Interactive setup
-./install-docker-compose.sh
+# Or use Docker Compose
+docker-compose up -d
 ```
 
-### Production Deployment
-```bash
-# With resource limits
-docker run -d -p 3000:80 \
-  --memory=512m --cpus=1.0 \
-  --name social-media-stats \
-  ghcr.io/l4ma/website-social-media-stats:latest
+## ✨ Features
 
-# With custom configuration
-docker run -d -p 8080:80 \
-  -e NODE_ENV=production \
-  ghcr.io/l4ma/website-social-media-stats:latest
+### Connected Platforms
+- **YouTube**: Real-time statistics with API key or OAuth 2.0 authentication
+- **Instagram**: Demo data with OAuth integration
+- **Threads**: Simulated realistic data
+
+### Data Visualization
+- Interactive charts and graphs
+- Time-based filtering (7d, 30d, 3m, 6m, 1y)
+- Real-time data updates
+- Historical data tracking
+
+### User Experience
+- Modern, responsive design
+- Dark/light theme support
+- Mobile-friendly interface
+- Real-time notifications
+
+### API Integration
+- YouTube Data API v3
+- Instagram Basic Display API
+- OAuth 2.0 authentication
+- Rate limiting and quota management
+
+## 🔧 Configuration
+
+### YouTube Setup
+1. **API Key Method**: 
+   - Get API key from [Google Cloud Console](https://console.cloud.google.com/)
+   - Enable YouTube Data API v3
+   - Enter API key and channel ID in Settings
+
+2. **OAuth 2.0 Method**:
+   - Create OAuth credentials in Google Cloud Console
+   - Follow the [YouTube OAuth Setup Guide](YOUTUBE_OAUTH_SETUP_GUIDE.md)
+   - Use the OAuth 2.0 option in Settings
+
+### Instagram Setup
+- Currently using demo data
+- OAuth integration available for future use
+
+## 📊 Data Collection
+
+### Automatic Collection
+- Daily data collection when visiting YouTube page
+- Historical data building over time
+- Smart caching to respect API quotas
+
+### Manual Collection
+- "Collect Now" button in Data Status
+- Force collection when needed
+- Real-time status monitoring
+
+### API Quota Management
+- Conservative daily limits (4 calls/day for YouTube)
+- 6-hour intervals between calls
+- Intelligent fallback to cached data
+- Quota exceeded notifications
+
+## 🛠️ Development
+
+### Project Structure
+```
+src/
+├── components/          # React components
+├── services/           # API and data services
+├── utils/              # Utility functions
+└── config/             # Configuration files
 ```
 
-## 📦 Available Images
-
-### GitHub Container Registry
+### Available Scripts
 ```bash
-# Latest version
-docker pull ghcr.io/l4ma/website-social-media-stats:latest
-
-# Specific version
-docker pull ghcr.io/l4ma/website-social-media-stats:v1.0.0
-
-# Main branch
-docker pull ghcr.io/l4ma/website-social-media-stats:main
+npm start          # Start development server
+npm run build      # Build for production
+npm run lint       # Run ESLint
+npm test           # Run tests
 ```
 
-### Image Tags
-- `latest` - Latest stable release
-- `main` - Latest from main branch
-- `v1.0.0` - Specific version tags
-- `sha-abc123` - Commit-specific builds
+### Key Services
+- `youtubeService`: YouTube API integration
+- `instagramService`: Instagram OAuth and data
+- `dataCollectionService`: Daily data collection
+- `overviewService`: Multi-platform aggregation
 
-## 🔒 Security
+## 🚀 Deployment
 
-### Security Features
-- **Security Headers**: XSS protection and content security policy
-- **Non-root Container**: Runs with minimal privileges
-- **Health Checks**: Automatic monitoring
-- **Resource Limits**: Configurable memory and CPU limits
-
-### Production Security
+### Docker
 ```bash
-# Run with security best practices
-docker run -d -p 3000:80 \
-  --security-opt no-new-privileges \
-  --read-only \
-  --tmpfs /tmp \
-  ghcr.io/l4ma/website-social-media-stats:latest
+# Build locally
+docker build -t social-media-stats .
+
+# Run locally
+docker run -d -p 3000:80 social-media-stats
+```
+
+### Production Build
+```bash
+npm run build
+serve -s build
 ```
 
 ## 📈 Monitoring
 
-### Health Check
-```bash
-# Check if the application is running
-curl http://localhost:3000/health
+### Health Checks
+- Container health monitoring
+- API status tracking
+- Data collection status
+- Error logging and alerts
 
-# Expected response: "healthy"
-```
-
-### Container Monitoring
-```bash
-# View container logs
-docker logs social-media-stats
-
-# Monitor resource usage
-docker stats social-media-stats
-
-# Check container status
-docker ps
-```
+### Security
+- HTTPS support
+- Secure headers
+- OAuth 2.0 authentication
+- API key management
 
 ## 🤝 Contributing
 
-### Development Setup
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Run tests and linting
-5. Submit a pull request
+4. Submit a pull request
 
-### Guidelines
-- Follow TypeScript best practices
-- Use ESLint for code quality
-- Write meaningful commit messages
-- Test your changes thoroughly
+## 📄 License
 
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License.
 
 ## 🙏 Acknowledgments
 
-- **React** for the frontend framework
-- **Recharts** for data visualization
-- **Tailwind CSS** for styling
-- **Framer Motion** for animations
-- **YouTube Data API** for YouTube integration
-- **Instagram Basic Display API** for Instagram integration
+- React and TypeScript for the frontend
+- Recharts for data visualization
+- YouTube Data API v3
+- Docker for containerization
 
-## 📞 Support
+## 💬 Support
 
-### Getting Help
-- **GitHub Issues**: [Report bugs or request features](https://github.com/L4ma/Website-Social-Media-Stats/issues)
-- **Documentation**: Check the [Wiki](https://github.com/L4ma/Website-Social-Media-Stats/wiki)
-- **Discussions**: Use [GitHub Discussions](https://github.com/L4ma/Website-Social-Media-Stats/discussions)
-
-### Common Issues
-- **API Quota Exceeded**: Wait 24 hours or check quota limits
-- **Data Not Loading**: Verify API keys and channel IDs
-- **Docker Issues**: Check Docker installation and permissions
+For issues and questions:
+1. Check the [GitHub Issues](https://github.com/l4ma/Website-Social-Media-Stats/issues)
+2. Review the documentation
+3. Check the troubleshooting guides
 
 ---
 
-**Built with ❤️ using React, TypeScript, and Docker**
-
-**Maintained by**: [L4ma](https://github.com/L4ma) 
+**Latest Update**: Fixed data collection timezone issue and added YouTube OAuth support (July 30, 2025) 
