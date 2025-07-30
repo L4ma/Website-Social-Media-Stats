@@ -1,6 +1,6 @@
 {
   "name": "social-media-stats",
-  "version": "1.0.0",
+  "version": "0.0.5",
   "private": true,
   "dependencies": {
     "@types/node": "^20.0.0",
@@ -23,7 +23,8 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "eslint src --ext .ts,.tsx --max-warnings 0",
-    "lint:fix": "eslint src --ext .ts,.tsx --fix"
+    "lint:fix": "eslint src --ext .ts,.tsx --fix",
+    "update-version": "node scripts/update-version.js"
   },
   "eslintConfig": {
     "extends": [

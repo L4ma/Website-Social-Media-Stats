@@ -25,6 +25,9 @@ jobs:
     - name: Install dependencies
       run: npm ci
       
+    - name: Update version from GitHub tag
+      run: npm run update-version
+      
     - name: Run linter
       run: npm run lint
       
