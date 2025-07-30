@@ -4,6 +4,11 @@ FROM node:18-alpine AS builder
 # Set working directory
 WORKDIR /app
 
+# Define build arguments for version information
+ARG REACT_APP_VERSION=1.0.0
+ARG REACT_APP_GITHUB_VERSION
+ARG REACT_APP_GITHUB_TAG
+
 # Copy package files
 COPY package*.json ./
 
@@ -13,7 +18,7 @@ RUN npm ci
 # Copy source code (excluding test files via .dockerignore)
 COPY . .
 
-# Build the application
+# Build the application with version information
 RUN npm run build
 
 # Production stage

@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import Header from './components/Header';
 import StatsOverview from './components/StatsOverview';
+import Footer from './components/Footer';
+import { getVersion } from './utils/version';
 
 import EngagementChart from './components/EngagementChart';
 import GrowthChart from './components/GrowthChart';
@@ -10,10 +12,8 @@ import YouTubeStats from './components/YouTubeStats';
 import InstagramStats from './components/InstagramStats';
 import Settings from './components/Settings';
 
-
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'youtube' | 'instagram' | 'settings'>('overview');
-
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
@@ -77,6 +77,8 @@ const App: React.FC = () => {
           )}
         </motion.div>
       </main>
+      
+      <Footer version={getVersion()} />
     </div>
   );
 };
